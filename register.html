@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Join - NEXA VIEW ELITE</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box}body{background:#050507;color:#fff;font-family:system-ui;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:14px}
+.card{background:#101010;border:1px solid #fbbf24;border-radius:22px;padding:32px;width:100%;max-width:380px;text-align:center;box-shadow:0 0 40px rgba(251,191,36,0.12)}
+.logo{color:#fbbf24;font-weight:900;font-size:22px;letter-spacing:1.5px}
+.sub{color:#888;font-size:11px;margin:8px 0 20px;letter-spacing:0.5px}
+.gbtn{background:#fff;color:#000;border:0;padding:14px;width:100%;border-radius:30px;font-weight:800;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:10px;font-size:14px;transition:0.2s}
+.gbtn:hover{transform:scale(1.02)}
+input{width:100%;padding:13px;background:#1a1a1a;border:1px solid #333;border-radius:12px;color:#fff;margin-top:14px;font-size:13px}
+input:focus{border-color:#fbbf24;outline:none}
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:#555;font-size:11px}.divider div{flex:1;height:1px;background:#222}
+.badge{display:inline-block;background:#1a1a00;border:1px solid #fbbf2433;color:#fbbf24;padding:4px 10px;border-radius:20px;font-size:9px;margin-top:12px}
+.link{color:#888;font-size:12px;text-decoration:none;display:block;margin-top:16px}
+.link b{color:#fbbf24}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="logo">👑 NEXA VIEW ELITE</div>
+<div class="sub">PREMIUM • GOOGLE VERIFIED ONLY • NO PHONE NEEDED</div>
+
+<button class="gbtn" onclick="googleJoin()">
+<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+Continue with Google
+</button>
+
+<div class="divider"><div></div>OPTIONAL<div></div></div>
+
+<input type="text" id="refCode" placeholder="Referral Code (e.g NEXA-ABC123)">
+<p style="color:#555;font-size:10px;margin-top:6px;text-align:left">If someone invited you, paste their NEXA ID here to give them 10% bonus</p>
+
+<p id="msg" style="color:#ef4444;font-size:11px;margin-top:12px;min-height:16px"></p>
+
+<div class="badge">🔒 100% Secure • Google OAuth • No Password Needed</div>
+
+<a class="link" href="login.html">Already have account? <b>Login with Google</b></a>
+<p style="color:#333;font-size:9px;margin-top:20px">By continuing you agree to NEXA VIEW ELITE premium terms • 15% daily • L1 10% L2 5%</p>
+</div>
+
+<script>
+const firebaseConfig={apiKey:"AIzaSyD1ftJH909fbV9X5oUr8r5c9YkeV7N1ecI",authDomain:"nexa-view.firebaseapp.com",projectId:"nexa-view"};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+// Auto redirect if already logged in
+auth.onAuthStateChanged(user=>{
+ if(user){
+  localStorage.setItem("nexa_email", user.email);
+  location.href="dashboard.html";
+ }
+});
+
+async function googleJoin(){
+ const provider=new firebase.auth.GoogleAuthProvider();
+ document.getElementById('msg').innerText="Opening Google...";
+ try{
+  const result=await auth.signInWithPopup(provider);
+  const user=result.user;
+  const refCode=document.getElementById('refCode').value.trim().toUpperCase();
+  const userRef=db.collection("users").doc(user.email);
+  const snap=await userRef.get();
+
+  if(!snap.exists){
+   // New elite user
+   await userRef.set({
+    email: user.email,
+    displayName: user.displayName||"",
+    photo: user.photoURL||"",
+    balance: 0,
+    totalEarned: 0,
+    userId: "NEXA-"+Math.random().toString(36).substr(2,6).toUpperCase(),
+    referredBy: refCode||null,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    isGoogleVerified: true,
+    platform: "NEXA VIEW ELITE PREMIUM"
+   });
+
+   // Save referral if provided
+   if(refCode){
+    await db.collection("referrals").add({
+     from: refCode,
+     to: user.email,
+     toUserId: "NEXA-"+Math.random().toString(36).substr(2,6).toUpperCase(),
+     email: user.email,
+     level: "L1",
+     status: "pending",
+     bonus: 0,
+     createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // Try find referrer by userId and give bonus entry
+    const refSnap=await db.collection("users").where("userId","==",refCode).limit(1).get();
+    if(!refSnap.empty){
+     let referrerEmail=refSnap.docs[0].data().email;
+     await db.collection("pendingBonuses").add({
+      referrer: referrerEmail,
+      referred: user.email,
+      level: "L1",
+      status: "pending",
+      createdAt: new Date().toISOString()
+     });
+    }
+   }
+  }
+
+  localStorage.setItem("nexa_email", user.email);
+  location.href="dashboard.html";
+
+ }catch(e){
+  console.error(e);
+  document.getElementById('msg').innerText=e.message;
+ }
+}
+</script>
+</body>
+</html>
