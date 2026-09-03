@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXA VIEW ELITE ADMIN</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box}body{background:#050507;color:white;font-family:system-ui;padding:12px;margin:0;font-size:13px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;background:linear-gradient(135deg,#111,#1a1a00);padding:12px;border-radius:12px;border:1px solid #fbbf24}.logout-btn{background:#ef4444;color:white;border:none;padding:8px 14px;border-radius:20px;font-weight:700;cursor:pointer}
+.box{background:#101010;border:1px solid #222;border-radius:14px;padding:14px;margin-bottom:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.stat-card{background:#151515;border:1px solid #fbbf2433;border-radius:12px;padding:12px;text-align:center}.stat-card h4{color:#888;font-size:10px;margin:0}.stat-card p{font-size:14px;font-weight:800;margin:4px 0 0}
+h2{color:#fbbf24;text-align:center;margin:0;font-size:18px;letter-spacing:1px}h3{color:#fbbf24;margin:0 0 10px;font-size:14px}
+.btn{padding:7px 12px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:11px}.btn-green{background:#22c55e;color:#000}.btn-red{background:#ef4444;color:white}.btn-blue{background:#3b82f6;color:white}.btn-yellow{background:#fbbf24;color:#000}.btn-small{padding:5px 10px;font-size:10px}
+.req-card{background:#1a1a1a;padding:12px;border-radius:10px;margin:8px 0;border:1px solid #333;display:flex;justify-content:space-between;align-items:center}
+.dep-card{background:#0f1f0f;padding:12px;border-radius:12px;margin:8px 0;border:1px solid #22c55e}
+input{padding:12px;background:#1e1e1e;border:1px solid #fbbf24;color:#fff;border-radius:10px;width:100%;margin:5px 0;font-size:14px}
+#loginScreen{display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9999;justify-content:center;align-items:center}.login-box{background:#111;padding:28px;border-radius:20px;border:1px solid #fbbf24;width:90%;max-width:340px;text-align:center;box-shadow:0 0 30px rgba(251,191,36,0.15)}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:999;justify-content:center;align-items:center}.modal-content{background:#111;width:96%;max-width:460px;border-radius:16px;padding:14px;border:1px solid #fbbf24;max-height:92vh;overflow:hidden;display:flex;flex-direction:column}
+.status-badge{padding:2px 8px;border-radius:20px;font-size:9px;font-weight:800;margin-left:6px}
+.bell-wrap{position:relative;cursor:pointer;background:#111;border:1px solid #fbbf24;padding:8px 12px;border-radius:20px}
+.bell-count{position:absolute;top:-6px;right:-6px;background:#ef4444;color:white;font-size:10px;font-weight:800;width:18px;height:18px;border-radius:50%;display:flex;justify-content:center;align-items:center}
+.chat-thread{background:#0a0a0a;border-radius:10px;padding:10px;height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.wa-msg{padding:10px 12px;border-radius:14px;max-width:85%;font-size:13px;font-weight:600}.wa-user{background:#2a2a2a;color:#fff;margin-right:auto}.wa-admin{background:#fbbf24;color:#000;margin-left:auto}
+.time-box{background:#000;padding:6px 8px;border-radius:6px;margin-top:5px;border:1px dashed #333;font-size:9px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0}.detail-item{background:#000;padding:6px 8px;border-radius:6px;border:1px solid #222}.detail-label{color:#888;font-size:8px;display:block}.detail-val{color:#fff;font-size:11px;font-weight:700;word-break:break-all}
+</style>
+</head>
+<body>
+<div id="loginScreen"><div class="login-box"><h2>👑 NEXA VIEW ELITE</h2><p style="color:#888;font-size:11px">PREMIUM ADMIN PANEL</p><input type="password" id="adminPassword" placeholder="Premium Password"><button class="btn btn-yellow" style="width:100%;padding:12px;margin-top:10px" onclick="checkLogin()">Unlock Elite Panel</button><p id="loginError" style="color:#ef4444;font-size:11px"></p><small style="color:#555">Default: nexa2026</small></div></div>
+
+<div id="mainPanel" style="display:none">
+<div class="header"><h2>👑 NEXA VIEW ELITE ADMIN</h2><div style="display:flex;gap:10px;align-items:center"><div class="bell-wrap" onclick="document.getElementById('chatBoxAnchor').scrollIntoView({behavior:'smooth'})">🔔 <span id="bellCount" class="bell-count" style="display:none">0</span></div><button class="logout-btn" onclick="logout()">Logout</button></div></div>
+
+<div class="box" style="border-color:#fbbf24"><h3>💰 Deposit M-PESA To (LIVE in wallet.html)</h3><div style="display:flex;gap:6px"><input type="text" id="mpesaNumber" value="0718422377 (Kelvin)"><button class="btn btn-green" onclick="saveMpesa()">Save LIVE</button></div></div>
+
+<div class="stats"><div class="stat-card"><h4>Total Invested</h4><p id="totalInvested" style="color:#22c55e">0</p></div><div class="stat-card"><h4>Today Invested</h4><p id="todayInvested" style="color:#22c55e">0</p></div><div class="stat-card"><h4>Today Withdraw</h4><p id="todayWithdrawals" style="color:#ef4444">0</p></div><div class="stat-card"><h4>Total Withdraw</h4><p id="totalWithdrawals" style="color:#ef4444">0</p></div></div>
+<div style="text-align:center;margin:-8px 0 12px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap"><button class="btn btn-yellow btn-small" onclick="resetFourStats()">🔄 RESET 4 Stats to 0 (Stay 0 After Refresh)</button><button class="btn btn-blue btn-small" onclick="loadStats()">↻ Refresh</button><small id="resetInfo" style="width:100%;display:block;color:#888;margin-top:4px"></small></div>
+
+<div class="box" style="border-color:#fbbf24"><h3>🔍 Search by Email / Phone / User ID / Name</h3><div style="display:flex;gap:6px"><input type="text" id="searchInput" placeholder="Search Google Email, Phone, NEXA ID"><button class="btn btn-blue btn-small" onclick="doSearch()">Search</button><button class="btn btn-small" style="background:#333;color:#fff" onclick="clearSearch()">Clear</button></div><div id="searchResult" style="color:#888;font-size:10px;margin-top:6px">Fast filter - Google emails supported</div></div>
+
+<div class="box" style="border-color:#fbbf24"><h3>🔐 PIN Reset Requests</h3><div id="pinResetList">Loading...</div></div>
+<div class="box" style="border-color:#3b82f6"><h3>💰 All Deposits - With Date & Time <span style="background:#3b82f6;color:#000;padding:2px 6px;border-radius:10px;font-size:8px">BLUE=PENDING</span></h3><div id="walletList">Loading...</div></div>
+<div class="box" style="border-color:#f97316"><h3>💸 All Withdrawals - With Date & Time <span style="background:#f97316;color:#000;padding:2px 6px;border-radius:10px;font-size:8px">ORANGE=PENDING</span></h3><div id="withdrawList">Loading...</div></div>
+<div class="box" style="border-color:#fbbf24"><h3>🎁 All Referrals - L1 + L2 <span id="refCount" style="color:#888;font-size:10px"></span></h3><div id="referralList">Loading...</div></div>
+<div id="chatBoxAnchor" class="box" style="border-color:#22c55e"><h3>💬 Chats - Organized by User <span id="chatTotal" style="color:#888;font-size:10px"></span> <button class="btn btn-blue btn-small" onclick="clearSearch();loadChats()">↻ Refresh Chat</button></h3><div id="internalChatList">Loading...</div></div>
+</div>
+
+<div id="chatModal" class="modal" onclick="closeChatModal()"><div class="modal-content" onclick="event.stopPropagation()"><div id="chatPhone" style="color:#22c55e;font-weight:800"></div><div id="chatUserId" style="color:#888;font-size:10px"></div><div id="chatThread" class="chat-thread" style="margin-top:8px"></div><div style="display:flex;gap:6px;margin-top:10px"><input type="text" id="replyInput" placeholder="Type reply..." style="margin:0;flex:1"><button class="btn btn-green" onclick="sendReply()">Send</button></div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-blue" style="flex:1" onclick="closeChatModal()">Close</button></div></div></div>
+
+<script>
+const firebaseConfig={apiKey:"AIzaSyD1ftJH909fbV9X5oUr8r5c9YkeV7N1ecI",authDomain:"nexa-view.firebaseapp.com",projectId:"nexa-view"};
+firebase.initializeApp(firebaseConfig);const db=firebase.firestore();
+const ADMIN_PASSWORD="nexa2026"; // PREMIUM PASSWORD
+
+function checkLogin(){if(document.getElementById('adminPassword').value===ADMIN_PASSWORD){localStorage.setItem('nexaAdminLoggedIn','true');showPanel();}else document.getElementById('loginError').innerText="Wrong - use nexa2026";}
+function showPanel(){document.getElementById('loginScreen').style.display='none';document.getElementById('mainPanel').style.display='block';loadMpesa();loadStats();loadPinResets();loadChats();loadDeposits();loadWithdraw();loadReferral();loadResetInfo();}
+function logout(){localStorage.removeItem('nexaAdminLoggedIn');location.reload();}
+if(localStorage.getItem('nexaAdminLoggedIn')==='true') showPanel();
+function loadMpesa(){db.collection("settings").doc("deposit").get().then(d=>{if(d.exists)document.getElementById('mpesaNumber').value=d.data().mpesaNumber||"0718422377 (Kelvin)";});}
+function saveMpesa(){db.collection("settings").doc("deposit").set({mpesaNumber:document.getElementById('mpesaNumber').value}).then(()=>alert("✅ M-PESA Saved LIVE! Wallet shows new number")); }
+function fmt(d){if(!d) return 'N/A'; if(d.toDate) return d.toDate().toLocaleString(); try{return new Date(d).toLocaleString();}catch(e){return d;}}
+function loadStats(){
+ db.collection("settings").doc("statsReset").get().then(resetDoc=>{
+  let resetTime=null; if(resetDoc.exists){ if(resetDoc.data().resetAt && resetDoc.data().resetAt.toDate) resetTime=resetDoc.data().resetAt.toDate(); else if(resetDoc.data().resetAtStr) resetTime=new Date(resetDoc.data().resetAtStr); }
+  let todayStr=new Date().toISOString().split('T')[0];
+  db.collection("deposits").where("status","==","approved").get().then(pSnap=>{
+   let total=0;let today=0; pSnap.forEach(d=>{ let x=d.data(); let cTime=x.approvedAt? (x.approvedAt.toDate?x.approvedAt.toDate():new Date(x.approvedAt)) : (x.createdAt? (x.createdAt.toDate?x.createdAt.toDate():new Date(x.createdAt)):null); if(resetTime && cTime && cTime < resetTime) return; total+=x.amount||x.packagePrice||0; let dStr=cTime?cTime.toISOString().split('T')[0]:''; if(dStr===todayStr) today+=x.amount||x.packagePrice||0; });
+   document.getElementById('totalInvested').innerText=total; document.getElementById('todayInvested').innerText=today;
+  });
+  db.collection("withdrawals").where("status","==","paid").get().then(ws=>{
+   let totalW=0;let todayW=0; ws.forEach(d=>{ let x=d.data(); let cTime=x.approvedAt? (x.approvedAt.toDate?x.approvedAt.toDate():new Date(x.approvedAt)) : (x.createdAt? (x.createdAt.toDate?x.createdAt.toDate():new Date(x.createdAt)):null); if(resetTime && cTime && cTime < resetTime) return; totalW+=x.amount||0; let dStr=cTime?cTime.toISOString().split('T')[0]:''; if(dStr===todayStr) todayW+=x.amount||0; });
+   document.getElementById('todayWithdrawals').innerText=todayW; document.getElementById('totalWithdrawals').innerText=totalW;
+  });
+ });
+}
+function resetFourStats(){ if(!confirm("RESET 4 Stats to 0? They will STAY 0 after refresh")) return; let now=new Date(); db.collection("settings").doc("statsReset").set({resetAt: firebase.firestore.FieldValue.serverTimestamp(),resetAtStr: now.toISOString()}).then(()=>{ document.getElementById('totalInvested').innerText="0"; document.getElementById('todayInvested').innerText="0"; document.getElementById('todayWithdrawals').innerText="0"; document.getElementById('totalWithdrawals').innerText="0"; document.getElementById('resetInfo').innerText="Last Reset: "+now.toISOString()+" - STAYS 0"; alert("✅ Reset Done!"); });}
+function loadResetInfo(){db.collection("settings").doc("statsReset").get().then(d=>{if(d.exists&&d.data().resetAtStr){document.getElementById('resetInfo').innerText="Last Reset: "+d.data().resetAtStr;}});}
+let depositsRaw=[], withdrawsRaw=[], pinResetsRaw=[], referralsRaw=[], _searchQ="";
+function doSearch(){_searchQ=document.getElementById('searchInput').value.trim().toLowerCase();document.getElementById('searchResult').innerText=_searchQ?`Filtering "${ _searchQ}"`:"All";renderPinResets();renderDeposits();renderWithdraws();renderReferrals();}
+function clearSearch(){document.getElementById('searchInput').value="";_searchQ="";document.getElementById('searchResult').innerText="All";renderPinResets();renderDeposits();renderWithdraws();renderReferrals();}
+function loadPinResets(){db.collection("pinResetRequests").where("status","==","pending").onSnapshot(s=>{pinResetsRaw=[];s.forEach(d=>{let x=d.data();x._id=d.id;pinResetsRaw.push(x);});renderPinResets();});}
+function renderPinResets(){let h="";pinResetsRaw.forEach(x=>{ if(_searchQ&&!JSON.stringify(x).toLowerCase().includes(_searchQ)) return; h+=`<div class="req-card"><b>${x.phone||x.email}</b><span><button class="btn btn-green btn-small" onclick="approvePin('${x._id}','${x.phone||x.email}')">0000</button><button class="btn btn-red btn-small" onclick="db.collection('pinResetRequests').doc('${x._id}').update({status:'rejected'})">X</button></span></div>`;});document.getElementById('pinResetList').innerHTML=h||"<p style='color:#888'>None</p>";}
+function approvePin(id,phone){db.collection("users").doc(phone).update({pin:"0000"}).then(()=>{db.collection("pinResetRequests").doc(id).update({status:"approved"});});}
+function loadDeposits(){db.collection("deposits").orderBy("createdAt","desc").limit(100).onSnapshot(s=>{depositsRaw=[];s.forEach(d=>{let x=d.data();x._id=d.id;depositsRaw.push(x);});renderDeposits();});}
+function renderDeposits(){let h="";depositsRaw.forEach(x=>{ if(_searchQ&&!JSON.stringify(x).toLowerCase().includes(_searchQ)) return; let col=x.status==='pending'?'#3b82f6':x.status==='approved'?'#22c55e':'#ef4444'; h+=`<div class="dep-card" style="border-color:${col}"><div><b style="color:#fbbf24">${x.email||x.phone}</b> <span class="status-badge" style="background:${col};color:#000">${x.status}</span> Ksh ${x.amount} - ${x.code||x.mpesaCode||''}<br><small style="color:#888">${fmt(x.createdAt)}</small></div><div style="display:flex;gap:6px;margin-top:8px">${x.status==='pending'?`<button class="btn btn-green" style="flex:1" onclick="approveDeposit('${x._id}','${x.email||x.phone}',${x.amount})">✅ Approve</button><button class="btn btn-red btn-small" style="flex:1" onclick="rejectDeposit('${x._id}')">❌ Reject</button>`:''}</div></div>`;});document.getElementById('walletList').innerHTML=h||"<p style='color:#888'>None</p>";}
+function loadWithdraw(){db.collection("withdrawals").orderBy("createdAt","desc").limit(100).onSnapshot(s=>{withdrawsRaw=[];s.forEach(d=>{let x=d.data();x._id=d.id;withdrawsRaw.push(x);});renderWithdraws();});}
+function renderWithdraws(){let h="";withdrawsRaw.forEach(x=>{ if(_searchQ&&!JSON.stringify(x).toLowerCase().includes(_searchQ)) return; let col=x.status==='pending'?'#f97316':'#22c55e'; h+=`<div class="dep-card" style="border-color:${col}"><div><b style="color:#fbbf24">${x.email||x.phone}</b> <span class="status-badge" style="background:${col};color:#000">${x.status}</span> Ksh ${x.amount} → ${x.receivingPhone||''}<br><small style="color:#888">${fmt(x.createdAt)}</small></div><div style="display:flex;gap:6px;margin-top:8px">${x.status==='pending'?`<button class="btn btn-blue" style="flex:1" onclick="approveWithdraw('${x._id}')">✅ Mark Paid</button><button class="btn btn-red btn-small" style="flex:1" onclick="rejectWithdraw('${x._id}')">❌ Reject</button>`:''}</div></div>`;});document.getElementById('withdrawList').innerHTML=h||"<p style='color:#888'>None</p>";}
+function loadReferral(){db.collection("referrals").orderBy("createdAt","desc").limit(100).onSnapshot(s=>{referralsRaw=[];s.forEach(d=>{let x=d.data();x._id=d.id;referralsRaw.push(x);});renderReferrals();});}
+function renderReferrals(){let h="";referralsRaw.forEach(x=>{ if(_searchQ&&!JSON.stringify(x).toLowerCase().includes(_searchQ)) return; h+=`<div class="req-card"><span>${x.email||x.to} • ${x.level||'L1'} • ${x.from||''}</span><span style="color:${x.status==='pending'?'#fbbf24':'#22c55e'}">${x.status||'pending'}</span></div>`;});document.getElementById('referralList').innerHTML=h||"<p style='color:#888'>None</p>"; document.getElementById('refCount').innerText="("+referralsRaw.length+")";}
+function approveDeposit(id,email,amt){db.collection("deposits").doc(id).update({status:"approved",approvedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ db.collection("users").doc(email).update({balance:firebase.firestore.FieldValue.increment(amt)}); alert("✅ Approved & Balance added"); });}
+function rejectDeposit(id){db.collection("deposits").doc(id).update({status:"rejected"});}
+function approveWithdraw(id){db.collection("withdrawals").doc(id).update({status:"paid",approvedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>alert("✅ Paid")); }
+function rejectWithdraw(id){db.collection("withdrawals").doc(id).update({status:"rejected"});}
+function loadChats(){/* keep your chat logic */ document.getElementById('internalChatList').innerHTML="<p style='color:#888'>Chat system ready - connect your chats collection</p>";}
+function closeChatModal(){document.getElementById('chatModal').style.display='none';}
+function sendReply(){}
+</script>
+</body>
+                                                                                                                                                                                      </html>
