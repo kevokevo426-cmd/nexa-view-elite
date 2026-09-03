@@ -9,54 +9,37 @@
 <style>
 *{box-sizing:border-box}body{background:#050507;color:#fff;font-family:system-ui;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:14px}
 .card{background:#101010;border:1px solid #fbbf24;border-radius:22px;padding:32px;width:100%;max-width:380px;text-align:center;box-shadow:0 0 40px rgba(251,191,36,0.12)}
-.logo{color:#fbbf24;font-weight:900;font-size:22px;letter-spacing:1.5px}
-.sub{color:#888;font-size:11px;margin:8px 0 20px;letter-spacing:0.5px}
-.gbtn{background:#fff;color:#000;border:0;padding:14px;width:100%;border-radius:30px;font-weight:800;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:10px;font-size:14px;transition:0.2s}
-.gbtn:hover{transform:scale(1.02)}
-input{width:100%;padding:13px;background:#1a1a1a;border:1px solid #333;border-radius:12px;color:#fff;margin-top:14px;font-size:13px}
-input:focus{border-color:#fbbf24;outline:none}
-.divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:#555;font-size:11px}.divider div{flex:1;height:1px;background:#222}
-.badge{display:inline-block;background:#1a1a00;border:1px solid #fbbf2433;color:#fbbf24;padding:4px 10px;border-radius:20px;font-size:9px;margin-top:12px}
-.link{color:#888;font-size:12px;text-decoration:none;display:block;margin-top:16px}
-.link b{color:#fbbf24}
+.logo{color:#fbbf24;font-weight:900;font-size:22px}
+.sub{color:#888;font-size:11px;margin:8px 0 20px}
+.gbtn{background:#fff;color:#000;border:0;padding:14px;width:100%;border-radius:30px;font-weight:800;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:10px}
+input{width:100%;padding:13px;background:#1a1a1a;border:1px solid #333;border-radius:12px;color:#fff;margin-top:14px}
+#msg{color:#ef4444;font-size:11px;margin-top:12px;min-height:16px}
 </style>
 </head>
 <body>
 <div class="card">
 <div class="logo">👑 NEXA VIEW ELITE</div>
-<div class="sub">PREMIUM • GOOGLE VERIFIED ONLY • NO PHONE NEEDED</div>
-<button class="gbtn" onclick="googleJoin()">
-<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
-Continue with Google
-</button>
-<div class="divider"><div></div>OPTIONAL<div></div></div>
+<div class="sub">PREMIUM • GOOGLE VERIFIED ONLY</div>
+<button class="gbtn" onclick="googleJoin()"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">Continue with Google</button>
 <input type="text" id="refCode" placeholder="Referral Code (e.g NEXA-ABC123)">
-<p style="color:#555;font-size:10px;margin-top:6px;text-align:left">If someone invited you, paste their NEXA ID here to give them 10% bonus</p>
-<p id="msg" style="color:#ef4444;font-size:11px;margin-top:12px;min-height:16px"></p>
-<div class="badge">🔒 100% Secure • Google OAuth • No Password Needed</div>
-<a class="link" href="login.html">Already have account? <b>Login with Google</b></a>
-<p style="color:#333;font-size:9px;margin-top:20px">By continuing you agree to NEXA VIEW ELITE premium terms • 15% daily • L1 10% L2 5%</p>
+<p id="msg"></p>
+<a href="login.html" style="color:#888;font-size:12px;text-decoration:none;display:block;margin-top:16px">Already have account? <b style="color:#fbbf24">Login</b></a>
 </div>
 <script>
-const firebaseConfig={
-  apiKey: "AIzaSyCICiaqFBAv5b82cYLYaWLWgZgeNIH8Dr0",
-  authDomain: "nexa-view-elite.firebaseapp.com",
-  databaseURL: "https://nexa-view-elite-default-rtdb.firebaseio.com",
-  projectId: "nexa-view-elite",
-  storageBucket: "nexa-view-elite.firebasestorage.app",
-  messagingSenderId: "436160553921",
-  appId: "1:436160553921:web:19c4d8add792ac36d54540",
-  measurementId: "G-Q9YTKYG7DH"
+const firebaseConfig = {
+    apiKey: "AIzaSyCICiaqFBAv5b82cYLYaWLWgZgeNIH8Dr0",
+    authDomain: "nexa-view-elite.firebaseapp.com",
+    databaseURL: "https://nexa-view-elite-default-rtdb.firebaseio.com",
+    projectId: "nexa-view-elite",
+    storageBucket: "nexa-view-elite.firebasestorage.app",
+    messagingSenderId: "436160553921",
+    appId: "1:436160553921:web:19c4d8add792ac36d54540",
+    measurementId: "G-Q9YTKYG7DH"
 };
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
-auth.onAuthStateChanged(user=>{
- if(user){
-  localStorage.setItem("nexa_email", user.email);
-  location.href="dashboard.html";
- }
-});
+
 async function googleJoin(){
  const provider=new firebase.auth.GoogleAuthProvider();
  document.getElementById('msg').innerText="Opening Google...";
@@ -68,33 +51,18 @@ async function googleJoin(){
   const snap=await userRef.get();
   if(!snap.exists){
    await userRef.set({
-    email: user.email,
-    displayName: user.displayName||"",
-    photo: user.photoURL||"",
-    balance: 0,
-    totalEarned: 0,
-    userId: "NEXA-"+Math.random().toString(36).substr(2,6).toUpperCase(),
-    referredBy: refCode||null,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    isGoogleVerified: true,
-    platform: "NEXA VIEW ELITE PREMIUM"
+    email:user.email, displayName:user.displayName||"", photo:user.photoURL||"",
+    balance:0, totalEarned:0, userId:"NEXA-"+Math.random().toString(36).substr(2,6).toUpperCase(),
+    referredBy:refCode||null, createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+    isGoogleVerified:true
    });
-   if(refCode){
-    await db.collection("referrals").add({
-     from: refCode,
-     to: user.email,
-     email: user.email,
-     level: "L1",
-     status: "pending",
-     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-   }
+   if(refCode){ await db.collection("referrals").add({from:refCode,to:user.email,level:"L1",status:"pending",createdAt:firebase.firestore.FieldValue.serverTimestamp()}); }
   }
   localStorage.setItem("nexa_email", user.email);
   location.href="dashboard.html";
  }catch(e){
   console.error(e);
-  document.getElementById('msg').innerText=e.message;
+  document.getElementById('msg').innerText=e.code+": "+e.message;
  }
 }
 </script>
