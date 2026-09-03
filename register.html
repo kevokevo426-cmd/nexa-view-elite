@@ -45,12 +45,21 @@ Continue with Google
 </div>
 
 <script>
-const firebaseConfig={apiKey:"AIzaSyD1ftJH909fbV9X5oUr8r5c9YkeV7N1ecI",authDomain:"nexa-view.firebaseapp.com",projectId:"nexa-view"};
+// FIXED CONFIG - NEXA VIEW ELITE
+const firebaseConfig={
+  apiKey: "AIzaSyCICiaqFBAv5b82cYLYaWLWgZgeNIH8Dr0",
+  authDomain: "nexa-view-elite.firebaseapp.com",
+  databaseURL: "https://nexa-view-elite-default-rtdb.firebaseio.com",
+  projectId: "nexa-view-elite",
+  storageBucket: "nexa-view-elite.firebasestorage.app",
+  messagingSenderId: "436160553921",
+  appId: "1:436160553921:web:19c4d8add792ac36d54540",
+  measurementId: "G-Q9YTKYG7DH"
+};
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
 
-// Auto redirect if already logged in
 auth.onAuthStateChanged(user=>{
  if(user){
   localStorage.setItem("nexa_email", user.email);
@@ -69,7 +78,6 @@ async function googleJoin(){
   const snap=await userRef.get();
 
   if(!snap.exists){
-   // New elite user
    await userRef.set({
     email: user.email,
     displayName: user.displayName||"",
@@ -83,19 +91,15 @@ async function googleJoin(){
     platform: "NEXA VIEW ELITE PREMIUM"
    });
 
-   // Save referral if provided
    if(refCode){
     await db.collection("referrals").add({
      from: refCode,
      to: user.email,
-     toUserId: "NEXA-"+Math.random().toString(36).substr(2,6).toUpperCase(),
      email: user.email,
      level: "L1",
      status: "pending",
-     bonus: 0,
      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    // Try find referrer by userId and give bonus entry
     const refSnap=await db.collection("users").where("userId","==",refCode).limit(1).get();
     if(!refSnap.empty){
      let referrerEmail=refSnap.docs[0].data().email;
@@ -109,10 +113,8 @@ async function googleJoin(){
     }
    }
   }
-
   localStorage.setItem("nexa_email", user.email);
   location.href="dashboard.html";
-
  }catch(e){
   console.error(e);
   document.getElementById('msg').innerText=e.message;
