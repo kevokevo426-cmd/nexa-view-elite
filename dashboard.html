@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard - NEXA VIEW ELITE</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box}body{background:#050507;color:#fff;font-family:system-ui;margin:0}
+.header{background:linear-gradient(135deg,#111,#1a1a00);border-bottom:2px solid #fbbf24;padding:14px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.logo{color:#fbbf24;font-weight:900;letter-spacing:1px;font-size:15px}
+.balCard{background:linear-gradient(135deg,#1a1a00,#111);border:1px solid #fbbf24;border-radius:20px;padding:22px;margin:14px;text-align:center;box-shadow:0 0 30px rgba(251,191,36,0.1)}
+.balCard small{color:#888;font-size:11px;letter-spacing:1px}.bal{color:#fbbf24;font-size:36px;font-weight:900;margin:8px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px}
+.btn{padding:16px;border-radius:14px;font-weight:800;text-align:center;text-decoration:none;display:block;font-size:14px}
+.btn-gold{background:#fbbf24;color:#000}.btn-green{background:#22c55e;color:#000}.btn-dark{background:#111;border:1px solid #333;color:#fff}
+.card{background:#101010;border:1px solid #222;border-radius:14px;padding:16px;margin:14px}
+.statRow{display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:#888}
+.progress{background:#222;height:6px;border-radius:20px;margin-top:8px;overflow:hidden}.progress div{height:100%;background:#fbbf24;width:40%}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="logo">👑 NEXA VIEW ELITE</div>
+<div style="text-align:right"><div id="userEmail" style="font-size:10px;color:#888"></div><div id="uid" style="font-size:9px;color:#fbbf24"></div></div>
+</div>
+
+<div class="balCard">
+<small>ELITE BALANCE</small>
+<div class="bal" id="balance">Ksh 0</div>
+<small id="mpesaLive" style="color:#22c55e">M-PESA: Loading...</small>
+<div class="statRow"><span>Total Earned</span><span id="earned">Ksh 0</span></div>
+<div class="progress"><div id="prog"></div></div>
+</div>
+
+<div class="grid">
+<a class="btn btn-gold" href="tasks.html">📺 Tasks<br><small style="font-size:10px">Daily Earn</small></a>
+<a class="btn btn-green" href="wallet.html">💰 Wallet<br><small style="font-size:10px">Deposit / Withdraw</small></a>
+</div>
+
+<div class="grid">
+<a class="btn btn-dark" href="referral.html">👥 Refer<br><small style="font-size:10px;color:#888">L1 10% L2 5%</small></a>
+<a class="btn btn-dark" href="profile.html">👤 Profile<br><small style="font-size:10px;color:#888">Google Verified</small></a>
+</div>
+
+<div class="card" style="border-color:#fbbf2422">
+<h4 style="color:#fbbf24;margin:0 0 8px">🔥 How NEXA VIEW ELITE Works</h4>
+<p style="color:#888;font-size:12px;line-height:1.6">
+1. Deposit via M-PESA (LIVE number from Admin)<br>
+2. Watch daily premium tasks<br>
+3. Refer friends with Google emails<br>
+4. Withdraw instantly to M-PESA<br>
+</p>
+<p style="color:#22c55e;font-size:11px;margin-top:10px">✅ Google Verified Only • Premium Support • Instant Payouts</p>
+</div>
+
+<div style="text-align:center;padding:10px">
+<button onclick="logout()" style="background:#222;color:#fff;border:1px solid #333;padding:10px 20px;border-radius:20px;font-size:12px">Logout</button>
+<p style="color:#333;font-size:9px;margin-top:12px">© 2026 NEXA VIEW ELITE - PREMIUM</p>
+</div>
+
+<script>
+const firebaseConfig={apiKey:"AIzaSyD1ftJH909fbV9X5oUr8r5c9YkeV7N1ecI",authDomain:"nexa-view.firebaseapp.com",projectId:"nexa-view"};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+auth.onAuthStateChanged(user=>{
+ if(!user){ location.href="register.html"; return; }
+ document.getElementById('userEmail').innerText=user.email;
+ db.collection("users").doc(user.email).onSnapshot(doc=>{
+  if(doc.exists){
+   let data=doc.data();
+   document.getElementById('balance').innerText="Ksh "+(data.balance||0);
+   document.getElementById('earned').innerText="Ksh "+(data.totalEarned||data.balance||0);
+   document.getElementById('uid').innerText=data.userId||"";
+   let prog=Math.min(100, (data.balance||0)/10); document.getElementById('prog').style.width=prog+"%";
+  } else {
+   // create if not exists (first login)
+   db.collection("users").doc(user.email).set({
+    email:user.email, displayName:user.displayName||"", balance:0,
+    userId:"NEXA-"+Math.random().toString(36).substr(2,6).toUpperCase(),
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+   }, {merge:true});
+  }
+ });
+ // M-PESA LIVE
+ db.collection("settings").doc("deposit").onSnapshot(d=>{
+  if(d.exists) document.getElementById('mpesaLive').innerText="M-PESA: "+d.data().mpesaNumber;
+ });
+});
+
+function logout(){ auth.signOut().then(()=>{ localStorage.clear(); location.href="register.html"; }); }
+</script>
+</body>
+</html>
