@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Login - NEXA VIEW ELITE</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box}body{background:#050507;color:#fff;font-family:system-ui;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:14px}
+.card{background:#101010;border:1px solid #fbbf24;border-radius:22px;padding:32px;width:100%;max-width:380px;text-align:center;box-shadow:0 0 40px rgba(251,191,36,0.12)}
+.logo{color:#fbbf24;font-weight:900;font-size:22px;letter-spacing:1.5px}
+.sub{color:#888;font-size:11px;margin:8px 0 22px}
+.gbtn{background:#fff;color:#000;border:0;padding:14px;width:100%;border-radius:30px;font-weight:800;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:10px;font-size:14px}
+.badge{display:inline-block;background:#0f1f0f;border:1px solid #22c55e33;color:#22c55e;padding:6px 12px;border-radius:20px;font-size:10px;margin-top:16px}
+.link{color:#888;font-size:12px;text-decoration:none;display:block;margin-top:18px}.link b{color:#fbbf24}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="logo">👑 NEXA VIEW ELITE</div>
+<div class="sub">PREMIUM LOGIN • GOOGLE VERIFIED</div>
+
+<button class="gbtn" onclick="googleLogin()">
+<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+Login with Google
+</button>
+
+<p id="msg" style="color:#ef4444;font-size:11px;margin-top:14px;min-height:16px"></p>
+
+<div class="badge">✅ Secure • No password • Instant access</div>
+
+<a class="link" href="register.html">New here? <b>Join Elite with Google</b></a>
+<p style="color:#333;font-size:9px;margin-top:22px">© 2026 NEXA VIEW ELITE - PREMIUM PLATFORM</p>
+</div>
+
+<script>
+const firebaseConfig={apiKey:"AIzaSyD1ftJH909fbV9X5oUr8r5c9YkeV7N1ecI",authDomain:"nexa-view.firebaseapp.com",projectId:"nexa-view"};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+auth.onAuthStateChanged(user=>{
+ if(user){
+  localStorage.setItem("nexa_email", user.email);
+  location.href="dashboard.html";
+ }
+});
+
+async function googleLogin(){
+ document.getElementById('msg').innerText="Opening Google...";
+ const provider=new firebase.auth.GoogleAuthProvider();
+ try{
+  const result=await auth.signInWithPopup(provider);
+  const user=result.user;
+  const userRef=db.collection("users").doc(user.email);
+  const snap=await userRef.get();
+  if(!snap.exists){
+   // If user never registered, create account automatically
+   await userRef.set({
+    email: user.email,
+    displayName: user.displayName||"",
+    photo: user.photoURL||"",
+    balance: 0,
+    userId: "NEXA-"+Math.random().toString(36).substr(2,6).toUpperCase(),
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    isGoogleVerified: true
+   });
+  }
+  localStorage.setItem("nexa_email", user.email);
+  location.href="dashboard.html";
+ }catch(e){
+  document.getElementById('msg').innerText=e.message;
+ }
+}
+</script>
+</body>
+</html>
