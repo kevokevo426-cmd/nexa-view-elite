@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Deposit - NEXA ELITE</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>body{background:#050507;color:#fff;font-family:system-ui;margin:0;padding:14px}.mpesa{background:#0f1f0f;border:1px dashed #22c55e;color:#22c55e;padding:14px;border-radius:12px;text-align:center;margin-bottom:14px}.box{background:#101010;border:1px solid #222;border-radius:14px;padding:16px;margin:12px 0}input{width:100%;padding:13px;background:#1a1a1a;border:1px solid #333;border-radius:10px;color:#fff;margin:6px 0}.btn{width:100%;padding:14px;background:#fbbf24;color:#000;border:0;border-radius:30px;font-weight:800}.hist{background:#151515;border:1px solid #222;padding:12px;border-radius:10px;margin:6px 0;display:flex;justify-content:space-between;font-size:12px}</style>
+</head><body>
+<h2 style="color:#fbbf24">💰 DEPOSIT ONLY</h2>
+<div class="mpesa">📲 Send to M-PESA LIVE:<br><b id="mpesaNum" style="color:#fff;font-size:16px">Loading...</b><br><small>LIVE from Admin Panel</small></div>
+<div class="box"><h3 style="color:#fbbf24;margin:0 0 8px">Make Deposit</h3>
+<input id="amt" type="number" placeholder="Amount e.g 500"><input id="code" placeholder="M-PESA Code e.g QH12..."><input id="phone" placeholder="Your M-PESA Number 07...">
+<button class="btn" onclick="submitDep()">Submit Deposit</button><p id="msg" style="font-size:11px;text-align:center;color:#22c55e"></p></div>
+<div class="box"><h3 style="color:#3b82f6">💰 My Deposit History</h3><div id="history">Loading...</div></div>
+<div style="text-align:center"><a href="wallet.html" style="color:#888;text-decoration:none">← Back to Wallet</a></div>
+<script>
+const firebaseConfig={apiKey:"AIzaSyD1ftJH909fbV9X5oUr8r5c9YkeV7N1ecI",authDomain:"nexa-view.firebaseapp.com",projectId:"nexa-view"};firebase.initializeApp(firebaseConfig);const auth=firebase.auth();const db=firebase.firestore();let cur=null;
+auth.onAuthStateChanged(u=>{if(!u)location.href="register.html";else{cur=u;loadMpesa();loadHist();}});
+function loadMpesa(){db.collection("settings").doc("deposit").onSnapshot(d=>{if(d.exists)document.getElementById('mpesaNum').innerText=d.data().mpesaNumber;})}
+function submitDep(){let a=parseInt(document.getElementById('amt').value),c=document.getElementById('code').value.trim(),p=document.getElementById('phone').value.trim();if(!a||!c||!p)return alert("Fill all");db.collection("deposits").add({email:cur.email,phone:cur.email,amount:a,code:c,mpesaCode:c,senderPhone:p,status:"pending",createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{document.getElementById('msg').innerText="✅ Deposit submitted - Wait Admin approval";document.getElementById('amt').value="";document.getElementById('code').value="";document.getElementById('phone').value="";})}
+function loadHist(){db.collection("deposits").where("email","==",cur.email).orderBy("createdAt","desc").limit(30).onSnapshot(s=>{let h="";s.forEach(d=>{let x=d.data();h+=`<div class="hist"><div><b>Ksh ${x.amount}</b><br><small>${x.code||x.mpesaCode}</small></div><div style="color:${x.status=='pending'?'#3b82f6':'#22c55e'};font-weight:800">${x.status.toUpperCase()}</div></div>`});document.getElementById('history').innerHTML=h||"No deposits";})}
+</script></body></html>
